@@ -23,6 +23,10 @@ export class HelloWorldModel extends Observable {
     try {
       console.log("-------------- CONNECTING --------------")
       await this.connect();
+      await this._bluetooth.requestMtu({
+        peripheralUUID: this.macAddress,
+        value: 250
+      })
       console.log("-------------- CONNECTED --------------")
     } catch (e) {
       console.log("AN ERROR OCCURRED WHILE CONNECTING");
@@ -38,9 +42,10 @@ export class HelloWorldModel extends Observable {
           reject(new Error('Device not found!'));
         }
       }, 3000);
-      this._bluetooth
+      let res = this._bluetooth
         .connect({
           UUID: this.macAddress,
+          autoDiscoverAll: true,
           onConnected: (peripheral) => {
             connected = true;
             console.log(peripheral.UUID)
@@ -53,6 +58,8 @@ export class HelloWorldModel extends Observable {
         .catch((error) => {
           reject(error);
         });
+      console.log(res)
+      console.log(JSON.stringify(res))
     });
   }
 
@@ -66,7 +73,8 @@ export class HelloWorldModel extends Observable {
       const res = await this._bluetooth.read({
         peripheralUUID: this.macAddress,
         serviceUUID: this.serviceUUID,
-        characteristicUUID:this.characteristicUUID
+        characteristicUUID:this.characteristicUUID,
+        timeout: 2000
       });
       this.logData(res);
 
